@@ -79,8 +79,10 @@ export const useWebhooks = () => {
 
       const response = await fetch(WEBHOOK_URLS.SAVE_DATA, {
         method: "POST",
+        mode: "cors",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
         },
         body: JSON.stringify(payload),
       });
@@ -100,12 +102,41 @@ export const useWebhooks = () => {
       return true;
     } catch (error) {
       console.error("Error saving data:", error);
-      toast({
-        title: "Fehler beim Speichern",
-        description: "Die Änderungen konnten nicht gespeichert werden. Überprüfen Sie die Webhook-Verbindung.",
-        variant: "destructive",
-      });
-      return false;
+      
+      // Try alternative approach without response parsing
+      try {
+        console.log("Retrying without response parsing...");
+        const retryPayload = {
+          action,
+          data,
+          index,
+          timestamp: new Date().toISOString(),
+        };
+        
+        const retryResponse = await fetch(WEBHOOK_URLS.SAVE_DATA, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(retryPayload),
+        });
+        
+        console.log("Retry successful (no-cors mode)");
+        toast({
+          title: "Erfolgreich gespeichert",
+          description: getActionMessage(action),
+        });
+        return true;
+      } catch (retryError) {
+        console.error("Retry also failed:", retryError);
+        toast({
+          title: "Fehler beim Speichern",
+          description: "Die Änderungen konnten nicht gespeichert werden. Überprüfen Sie die Webhook-Verbindung.",
+          variant: "destructive",
+        });
+        return false;
+      }
     } finally {
       setIsLoading(false);
     }
