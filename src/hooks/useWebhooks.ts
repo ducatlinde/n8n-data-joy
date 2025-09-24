@@ -36,12 +36,22 @@ export const useWebhooks = () => {
       const data = await response.json();
       console.log("Data loaded successfully:", data);
 
+      // Handle both array and single object responses
+      let processedData: Record<string, any>[] = [];
+      
+      if (Array.isArray(data)) {
+        processedData = data;
+      } else if (data && typeof data === 'object') {
+        // If it's a single object, wrap it in an array
+        processedData = [data];
+      }
+
       toast({
         title: "Daten geladen",
-        description: `${Array.isArray(data) ? data.length : 0} Einträge erfolgreich geladen`,
+        description: `${processedData.length} Einträge erfolgreich geladen`,
       });
 
-      return Array.isArray(data) ? data : [];
+      return processedData;
     } catch (error) {
       console.error("Error loading data:", error);
       toast({
