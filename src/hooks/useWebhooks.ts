@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 const WEBHOOK_URLS = {
-  LOAD_DATA: "https://markusomega.app.n8n.cloud/webhook/load-data",
-  SAVE_DATA: "https://markusomega.app.n8n.cloud/webhook/save-data",
+  LOAD_DATA: "https://markusomega.app.n8n.cloud/webhook-test/load-data",
+  SAVE_DATA: "https://markusomega.app.n8n.cloud/webhook-test/save-data",
 };
 
 export interface WebhookResponse {
