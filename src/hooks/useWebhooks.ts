@@ -95,8 +95,8 @@ export const useWebhooks = () => {
       console.log("Data saved successfully:", result);
 
       toast({
-        title: "Erfolgreich gespeichert",
-        description: getActionMessage(action),
+        title: "Gespeichert ✅",
+        description: "Alle Änderungen wurden erfolgreich übermittelt",
       });
 
       return true;
@@ -124,15 +124,15 @@ export const useWebhooks = () => {
         
         console.log("Retry successful (no-cors mode)");
         toast({
-          title: "Erfolgreich gespeichert",
-          description: getActionMessage(action),
+          title: "Gespeichert ✅",
+          description: "Alle Änderungen wurden erfolgreich übermittelt",
         });
         return true;
       } catch (retryError) {
         console.error("Retry also failed:", retryError);
         toast({
-          title: "Fehler beim Speichern",
-          description: "Die Änderungen konnten nicht gespeichert werden. Überprüfen Sie die Webhook-Verbindung.",
+          title: "Speichern fehlgeschlagen ❌",
+          description: "Die Änderungen konnten nicht übermittelt werden",
           variant: "destructive",
         });
         return false;
