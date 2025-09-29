@@ -165,79 +165,35 @@
 }
 
 @layer components {
-  /* Enhanced Table styles with modern animations */
+  /* Clean, minimalistic table styles */
   .data-table {
     @apply w-full border-collapse;
   }
 
   .data-table th {
-    @apply bg-gradient-to-r from-table-header to-table-header/95 text-foreground font-semibold p-4 text-left border-b border-border/50 transition-all duration-200;
-  }
-
-  .data-table th:hover {
-    @apply bg-gradient-to-r from-table-header/90 to-table-header/85 shadow-md;
+    @apply bg-muted/30 text-foreground font-medium p-4 text-left border-b border-border/40;
   }
 
   .data-table td {
-    @apply p-4 border-b border-border/30 text-foreground transition-all duration-200;
+    @apply p-4 border-b border-border/20 text-foreground;
   }
 
-  .data-table tr {
-    @apply transition-all duration-200;
-  }
-
-  .data-table tr:hover {
-    @apply bg-gradient-to-r from-table-row-hover to-table-row-hover/80 transform translate-y-[-1px] shadow-sm;
-  }
-
-  .data-table tbody tr:nth-child(even) {
-    @apply bg-table-row-hover/30;
-  }
-
-  /* Enhanced button styles with modern effects */
+  /* Clean button styles */
   .btn-primary {
-    @apply bg-gradient-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-card active:scale-95 border border-primary/20;
+    @apply bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 py-3 rounded-lg transition-colors duration-200;
   }
 
   .btn-secondary {
-    @apply bg-gradient-to-r from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary/80 text-secondary-foreground font-medium px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-sm active:scale-95;
+    @apply bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium px-6 py-3 rounded-lg transition-colors duration-200;
   }
 
-  .btn-add {
-    @apply bg-gradient-to-r from-accent to-accent/90 hover:from-accent/90 hover:to-accent/80 text-accent-foreground font-semibold px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-card active:scale-95 animate-pulse;
-  }
-
-  /* Modal styles with backdrop effects */
-  .modal-overlay {
-    @apply fixed inset-0 bg-background/60 backdrop-blur-md z-50;
-  }
-
+  /* Simplified modal styles */
   .modal-content {
-    @apply bg-gradient-to-br from-card to-card/95 border border-border/50 rounded-xl shadow-modal backdrop-blur-sm max-w-2xl w-full mx-auto my-8 p-8;
+    @apply bg-card border border-border/50 rounded-lg shadow-card max-w-2xl w-full mx-auto my-8 p-8;
   }
 
-  /* Card enhancements */
+  /* Clean card styles */
   .card-enhanced {
-    @apply bg-gradient-to-br from-card to-card/90 border border-border/50 rounded-xl shadow-card hover:shadow-modal transition-all duration-300 hover:scale-[1.02];
-  }
-
-  /* Input field enhancements */
-  .input-enhanced {
-    @apply transition-all duration-200 focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-primary/50;
-  }
-
-  /* Loading state animations */
-  .loading-pulse {
-    @apply animate-pulse bg-gradient-to-r from-muted to-muted/50;
-  }
-
-  /* Success state animation */
-  .success-bounce {
-    @apply animate-bounce text-green-500;
-  }
-
-  /* Error state animation */
-  .error-shake {
-    @apply animate-[shake_0.5s_ease-in-out] text-destructive;
+    @apply bg-card border border-border/30 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200;
   }
 }

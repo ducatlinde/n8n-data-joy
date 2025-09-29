@@ -84,7 +84,7 @@ const Index = () => {
           </div>
 
           {/* Control Panel */}
-          <Card className="mb-8 card-enhanced animate-slide-up">
+          <Card className="mb-8 card-enhanced">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2 text-xl">
                 <Database className="w-6 h-6 text-primary" />
@@ -114,14 +114,6 @@ const Index = () => {
                   )}
                 </Button>
                 <Button
-                  onClick={handleAdd}
-                  disabled={isLoading}
-                  className="btn-add"
-                >
-                  <Plus className="w-5 h-5 mr-3" />
-                  Neuer Eintrag
-                </Button>
-                <Button
                   onClick={handleClearTable}
                   variant="outline"
                   disabled={isLoading || data.length === 0}
@@ -136,48 +128,36 @@ const Index = () => {
 
           {/* Data Display */}
           {data.length === 0 ? (
-            <Card className="card-enhanced animate-fade-in">
+            <Card className="card-enhanced">
               <CardContent className="py-16">
                 <div className="text-center">
-                  <div className="animate-pulse">
-                    <Database className="w-20 h-20 mx-auto text-primary/60 mb-6" />
-                  </div>
+                  <Database className="w-20 h-20 mx-auto text-primary/60 mb-6" />
                   <h3 className="text-2xl font-bold text-foreground mb-4">
                     Keine Daten geladen
                   </h3>
                   <p className="text-muted-foreground mb-8 text-lg">
-                    Beginnen Sie mit dem Laden vorhandener Daten oder erstellen Sie einen neuen Eintrag
+                    Klicken Sie auf "Daten laden", um mit der Datenverwaltung zu beginnen
                   </p>
-                  <div className="flex gap-4 justify-center">
-                    <Button onClick={handleLoadData} className="btn-primary">
-                      <Database className="w-5 h-5 mr-3" />
-                      Daten laden
-                    </Button>
-                    <Button onClick={handleAdd} className="btn-add">
-                      <Plus className="w-5 h-5 mr-3" />
-                      Ersten Eintrag erstellen
-                    </Button>
-                  </div>
+                  <Button onClick={handleLoadData} className="btn-primary">
+                    <Database className="w-5 h-5 mr-3" />
+                    Daten laden
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           ) : (
-            <Card className="card-enhanced animate-slide-up">
+            <Card className="card-enhanced">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-2xl flex items-center gap-3">
-                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                       Datentabelle
                     </CardTitle>
                     <CardDescription className="text-base mt-2">
                       {data.length} Einträge gefunden - Klicken Sie auf eine Zelle zum Inline-Bearbeiten
                     </CardDescription>
                   </div>
-                  <Button onClick={handleAdd} className="btn-add">
-                    <Plus className="w-5 h-5 mr-2" />
-                    Hinzufügen
-                  </Button>
                 </div>
               </CardHeader>
               <CardContent>

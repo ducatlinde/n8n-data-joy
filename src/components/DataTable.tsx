@@ -79,35 +79,29 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onEdit, onDelete, on
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="flex items-center justify-between">
         <Input
           placeholder="🔍 Daten durchsuchen..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="max-w-sm input-enhanced"
+          className="max-w-sm"
         />
-        <div className="flex gap-2">
-          <Button onClick={onAdd} className="btn-add">
-            <Plus className="w-5 h-5 mr-2" />
-            Neuer Eintrag
-          </Button>
-        </div>
       </div>
 
-      <div className="overflow-x-auto border border-border/50 rounded-xl bg-gradient-card shadow-card animate-fade-in">
+      <div className="overflow-x-auto border border-border/50 rounded-lg bg-card shadow-sm">
         <table className="data-table">
           <thead>
-            <tr className="bg-gradient-to-r from-primary/5 to-primary/10">
+            <tr>
               {columns.map((column) => (
                 <th
                   key={column}
                   onClick={() => handleSort(column)}
-                  className="cursor-pointer hover:bg-primary/10 transition-all duration-200 select-none"
+                  className="cursor-pointer hover:bg-muted/50 transition-colors duration-200"
                 >
                   <div className="flex items-center space-x-2">
-                    <span className="capitalize font-semibold">{column.replace(/_/g, " ")}</span>
+                    <span className="capitalize font-medium">{column.replace(/_/g, " ")}</span>
                     {sortColumn === column && (
-                      <span className="text-primary font-bold text-lg">
+                      <span className="text-primary text-sm">
                         {sortDirection === "asc" ? "↑" : "↓"}
                       </span>
                     )}
@@ -119,12 +113,12 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onEdit, onDelete, on
           </thead>
           <tbody>
             {sortedAndFilteredData.map((row, rowIndex) => (
-              <tr key={rowIndex} className="group animate-slide-up" style={{ animationDelay: `${rowIndex * 50}ms` }}>
+              <tr key={rowIndex} className="hover:bg-muted/30 transition-colors duration-200">
                 {columns.map((column) => (
                   <td
                     key={column}
                     onClick={() => handleCellEdit(rowIndex, column, row[column])}
-                    className="cursor-pointer hover:bg-primary/5 transition-all duration-200 relative group-hover:scale-[1.01]"
+                    className="cursor-pointer transition-colors duration-200"
                   >
                     {editingCell?.row === rowIndex && editingCell?.col === column ? (
                       <Input
@@ -136,25 +130,22 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onEdit, onDelete, on
                           if (e.key === "Escape") handleCellCancel();
                         }}
                         autoFocus
-                        className="w-full input-enhanced border-primary/50 shadow-md"
+                        className="w-full border-primary/50"
                       />
                     ) : (
-                      <div className="relative">
-                        <span className="block truncate max-w-[200px]" title={String(row[column] || "")}>
-                          {String(row[column] || "")}
-                        </span>
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-primary rounded transition-opacity duration-200"></div>
-                      </div>
+                      <span className="block truncate max-w-[200px]" title={String(row[column] || "")}>
+                        {String(row[column] || "")}
+                      </span>
                     )}
                   </td>
                 ))}
                 <td>
-                  <div className="flex space-x-2 justify-center opacity-60 group-hover:opacity-100 transition-opacity duration-200">
+                  <div className="flex space-x-2 justify-center">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => onEdit(row, rowIndex)}
-                      className="hover:scale-110 transition-transform duration-200 hover:bg-primary/10 hover:border-primary/30"
+                      className="hover:bg-primary/10 transition-colors duration-200"
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
@@ -162,7 +153,7 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onEdit, onDelete, on
                       size="sm"
                       variant="destructive"
                       onClick={() => onDelete(rowIndex)}
-                      className="hover:scale-110 transition-transform duration-200"
+                      className="transition-colors duration-200"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -175,7 +166,7 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onEdit, onDelete, on
       </div>
       
       {sortedAndFilteredData.length === 0 && filter && (
-        <div className="text-center py-8 animate-fade-in">
+        <div className="text-center py-8">
           <p className="text-muted-foreground text-lg">
             Keine Ergebnisse für "{filter}" gefunden
           </p>
