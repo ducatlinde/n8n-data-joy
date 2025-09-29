@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DataTable } from "@/components/DataTable";
 import { DataModal } from "@/components/DataModal";
 import { useWebhooks } from "@/hooks/useWebhooks";
-import { Database, RefreshCw, Trash2 } from "lucide-react";
+import { Database, RefreshCw, Trash2, Plus } from "lucide-react";
 
 const Index = () => {
   const [data, setData] = useState<Record<string, any>[]>([]);
@@ -84,14 +84,14 @@ const Index = () => {
           </div>
 
           {/* Control Panel */}
-          <Card className="mb-8 shadow-card">
+          <Card className="mb-8 card-enhanced animate-slide-up">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Database className="w-5 h-5" />
+              <CardTitle className="flex items-center space-x-2 text-xl">
+                <Database className="w-6 h-6 text-primary" />
                 <span>Datenbank Steuerung</span>
               </CardTitle>
-              <CardDescription>
-                Laden Sie Daten aus der Datenbank oder setzen Sie die Tabelle zurück
+              <CardDescription className="text-base">
+                Laden Sie Daten aus der Datenbank oder verwalten Sie Einträge
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -103,15 +103,23 @@ const Index = () => {
                 >
                   {isLoading ? (
                     <>
-                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      <RefreshCw className="w-5 h-5 mr-3 animate-spin" />
                       Laden...
                     </>
                   ) : (
                     <>
-                      <Database className="w-4 h-4 mr-2" />
+                      <Database className="w-5 h-5 mr-3" />
                       Daten laden
                     </>
                   )}
+                </Button>
+                <Button
+                  onClick={handleAdd}
+                  disabled={isLoading}
+                  className="btn-add"
+                >
+                  <Plus className="w-5 h-5 mr-3" />
+                  Neuer Eintrag
                 </Button>
                 <Button
                   onClick={handleClearTable}
@@ -119,7 +127,7 @@ const Index = () => {
                   disabled={isLoading || data.length === 0}
                   className="btn-secondary"
                 >
-                  <Trash2 className="w-4 h-4 mr-2" />
+                  <Trash2 className="w-5 h-5 mr-3" />
                   Tabelle leeren
                 </Button>
               </div>
@@ -128,30 +136,49 @@ const Index = () => {
 
           {/* Data Display */}
           {data.length === 0 ? (
-            <Card className="shadow-card">
-              <CardContent className="py-12">
+            <Card className="card-enhanced animate-fade-in">
+              <CardContent className="py-16">
                 <div className="text-center">
-                  <Database className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                  <div className="animate-pulse">
+                    <Database className="w-20 h-20 mx-auto text-primary/60 mb-6" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground mb-4">
                     Keine Daten geladen
                   </h3>
-                  <p className="text-muted-foreground mb-6">
-                    Klicken Sie auf "Daten laden", um mit der Datenverwaltung zu beginnen
+                  <p className="text-muted-foreground mb-8 text-lg">
+                    Beginnen Sie mit dem Laden vorhandener Daten oder erstellen Sie einen neuen Eintrag
                   </p>
-                  <Button onClick={handleLoadData} className="btn-primary">
-                    <Database className="w-4 h-4 mr-2" />
-                    Jetzt Daten laden
-                  </Button>
+                  <div className="flex gap-4 justify-center">
+                    <Button onClick={handleLoadData} className="btn-primary">
+                      <Database className="w-5 h-5 mr-3" />
+                      Daten laden
+                    </Button>
+                    <Button onClick={handleAdd} className="btn-add">
+                      <Plus className="w-5 h-5 mr-3" />
+                      Ersten Eintrag erstellen
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           ) : (
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle>Datentabelle</CardTitle>
-                <CardDescription>
-                  {data.length} Einträge gefunden - Klicken Sie auf eine Zelle zum Bearbeiten
-                </CardDescription>
+            <Card className="card-enhanced animate-slide-up">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-2xl flex items-center gap-3">
+                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                      Datentabelle
+                    </CardTitle>
+                    <CardDescription className="text-base mt-2">
+                      {data.length} Einträge gefunden - Klicken Sie auf eine Zelle zum Inline-Bearbeiten
+                    </CardDescription>
+                  </div>
+                  <Button onClick={handleAdd} className="btn-add">
+                    <Plus className="w-5 h-5 mr-2" />
+                    Hinzufügen
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <DataTable
