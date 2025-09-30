@@ -1,21 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/DataTable";
 import { DataModal } from "@/components/DataModal";
-import { useWebhooks } from "@/hooks/useWebhooks";
-import { Database, RefreshCw, Trash2, Plus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Database, RefreshCw, Trash2 } from "lucide-react";
 
 const Index = () => {
   const [data, setData] = useState<Record<string, any>[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingData, setEditingData] = useState<Record<string, any> | undefined>();
   const [editingIndex, setEditingIndex] = useState<number | undefined>();
-  const { loadData, saveData, isLoading } = useWebhooks();
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleLoadData = async () => {
-    const loadedData = await loadData();
-    setData(loadedData);
+    setIsLoading(true);
+    try {
+      const { data: plants, error } = await supabase
+        .from('industrial_gas_plants')
+        .select('*')
+        .order('plant_id');
+      
+      if (error) throw error;
+      
+      setData(plants || []);
+      toast({
+        title: "Success",
+        description: `Loaded ${plants?.length || 0} plant records successfully`,
+      });
+    } catch (error) {
+      console.error("Error loading data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load data from database",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClearTable = () => {
@@ -35,39 +59,111 @@ const Index = () => {
   };
 
   const handleDelete = async (index: number) => {
-    const rowToDelete = data[index];
-    const success = await saveData(rowToDelete, "delete", index);
-    
-    if (success) {
+    setIsLoading(true);
+    try {
+      const recordToDelete = data[index];
+      const { error } = await supabase
+        .from('industrial_gas_plants')
+        .delete()
+        .eq('id', recordToDelete.id);
+      
+      if (error) throw error;
+      
       const newData = data.filter((_, i) => i !== index);
       setData(newData);
+      
+      toast({
+        title: "Success",
+        description: "Plant record deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete plant record",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSave = async (formData: Record<string, any>) => {
-    const action = editingIndex !== undefined ? "update" : "create";
-    const success = await saveData(formData, action, editingIndex);
-    
-    if (success) {
+    setIsLoading(true);
+    try {
       if (editingIndex !== undefined) {
-        // Update existing item
+        // Update existing record
+        const { error } = await supabase
+          .from('industrial_gas_plants')
+          .update({
+            plant_id: formData.plant_id,
+            plant_name: formData.plant_name,
+            gas_type: formData.gas_type,
+            daily_capacity_tons: parseFloat(formData.daily_capacity_tons),
+            status: formData.status,
+            last_maintenance: formData.last_maintenance,
+            responsible_engineer: formData.responsible_engineer,
+            contact_email: formData.contact_email,
+          })
+          .eq('id', editingData?.id);
+        
+        if (error) throw error;
+        
+        // Update local state
         const newData = [...data];
-        newData[editingIndex] = formData;
+        newData[editingIndex] = { ...editingData, ...formData };
         setData(newData);
       } else {
-        // Add new item
-        setData([...data, formData]);
+        // Create new record
+        const { data: newRecord, error } = await supabase
+          .from('industrial_gas_plants')
+          .insert({
+            plant_id: formData.plant_id,
+            plant_name: formData.plant_name,
+            gas_type: formData.gas_type,
+            daily_capacity_tons: parseFloat(formData.daily_capacity_tons),
+            status: formData.status,
+            last_maintenance: formData.last_maintenance,
+            responsible_engineer: formData.responsible_engineer,
+            contact_email: formData.contact_email,
+          })
+          .select()
+          .single();
+        
+        if (error) throw error;
+        
+        setData([...data, newRecord]);
       }
+      
       setIsModalOpen(false);
       setEditingData(undefined);
       setEditingIndex(undefined);
+      
+      toast({
+        title: "Success",
+        description: `Plant record ${editingIndex !== undefined ? "updated" : "created"} successfully`,
+      });
+    } catch (error) {
+      console.error("Error saving data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save plant data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const getColumns = () => {
     if (data.length === 0) return [];
-    return Object.keys(data[0]);
+    return Object.keys(data[0]).filter(key => !['id', 'created_at', 'updated_at'].includes(key));
   };
+
+  // Load data on component mount
+  useEffect(() => {
+    handleLoadData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -76,10 +172,10 @@ const Index = () => {
           {/* Header */}
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-bold text-foreground mb-2">
-              Daten Management System
+              Industrial Gas Plants Management
             </h1>
             <p className="text-lg text-muted-foreground">
-              Verwalten Sie Ihre Datenbank über n8n Webhooks
+              Manage your industrial gas plant operations and data
             </p>
           </div>
 
@@ -88,10 +184,10 @@ const Index = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2 text-xl">
                 <Database className="w-6 h-6 text-primary" />
-                <span>Datenbank Steuerung</span>
+                <span>Database Control</span>
               </CardTitle>
               <CardDescription className="text-base">
-                Laden Sie Daten aus der Datenbank oder verwalten Sie Einträge
+                Load data from database or manage entries
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -104,12 +200,12 @@ const Index = () => {
                   {isLoading ? (
                     <>
                       <RefreshCw className="w-5 h-5 mr-3 animate-spin" />
-                      Laden...
+                      Loading...
                     </>
                   ) : (
                     <>
                       <Database className="w-5 h-5 mr-3" />
-                      Daten laden
+                      Load Data
                     </>
                   )}
                 </Button>
@@ -120,7 +216,7 @@ const Index = () => {
                   className="btn-secondary"
                 >
                   <Trash2 className="w-5 h-5 mr-3" />
-                  Tabelle leeren
+                  Clear Table
                 </Button>
               </div>
             </CardContent>
@@ -133,14 +229,14 @@ const Index = () => {
                 <div className="text-center">
                   <Database className="w-20 h-20 mx-auto text-primary/60 mb-6" />
                   <h3 className="text-2xl font-bold text-foreground mb-4">
-                    Keine Daten geladen
+                    No Data Loaded
                   </h3>
                   <p className="text-muted-foreground mb-8 text-lg">
-                    Klicken Sie auf "Daten laden", um mit der Datenverwaltung zu beginnen
+                    Click "Load Data" to start managing your industrial gas plant data
                   </p>
                   <Button onClick={handleLoadData} className="btn-primary">
                     <Database className="w-5 h-5 mr-3" />
-                    Daten laden
+                    Load Data
                   </Button>
                 </div>
               </CardContent>
@@ -152,10 +248,10 @@ const Index = () => {
                   <div>
                     <CardTitle className="text-2xl flex items-center gap-3">
                       <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      Datentabelle
+                      Plant Data Table
                     </CardTitle>
                     <CardDescription className="text-base mt-2">
-                      {data.length} Einträge gefunden - Klicken Sie auf eine Zelle zum Inline-Bearbeiten
+                      {data.length} entries found - Click on a cell for inline editing
                     </CardDescription>
                   </div>
                 </div>
