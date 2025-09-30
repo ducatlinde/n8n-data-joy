@@ -31,7 +31,7 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onEdit, onDelete, on
     );
   }
 
-  const columns = Object.keys(data[0] || {});
+  const columns = Object.keys(data[0] || {}).filter(key => !['id', 'created_at', 'updated_at'].includes(key));
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {

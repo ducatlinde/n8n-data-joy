@@ -91,6 +91,8 @@ const Index = () => {
   const handleSave = async (formData: Record<string, any>) => {
     setIsLoading(true);
     try {
+      let savedRecord;
+      
       if (editingIndex !== undefined) {
         // Update existing record
         const { error } = await supabase
@@ -111,7 +113,8 @@ const Index = () => {
         
         // Update local state
         const newData = [...data];
-        newData[editingIndex] = { ...editingData, ...formData };
+        savedRecord = { ...editingData, ...formData };
+        newData[editingIndex] = savedRecord;
         setData(newData);
       } else {
         // Create new record
@@ -132,7 +135,22 @@ const Index = () => {
         
         if (error) throw error;
         
+        savedRecord = newRecord;
         setData([...data, newRecord]);
+      }
+
+      // Send the saved record to webhook
+      try {
+        await fetch('https://mockbuilds.app.n8n.cloud/webhook-test/save-data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(savedRecord),
+        });
+      } catch (webhookError) {
+        console.warn('Webhook notification failed:', webhookError);
+        // Don't fail the save operation if webhook fails
       }
       
       setIsModalOpen(false);
