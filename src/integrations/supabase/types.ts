@@ -14,7 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      industrial_gas_plants: {
+        Row: {
+          contact_email: string
+          created_at: string
+          daily_capacity_tons: number
+          gas_type: string
+          id: string
+          last_maintenance: string
+          plant_id: string
+          plant_name: string
+          responsible_engineer: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          contact_email: string
+          created_at?: string
+          daily_capacity_tons: number
+          gas_type: string
+          id?: string
+          last_maintenance: string
+          plant_id: string
+          plant_name: string
+          responsible_engineer: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string
+          created_at?: string
+          daily_capacity_tons?: number
+          gas_type?: string
+          id?: string
+          last_maintenance?: string
+          plant_id?: string
+          plant_name?: string
+          responsible_engineer?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      industrial_gases: {
+        Row: {
+          application: string | null
+          boiling_point: number | null
+          chemical_formula: string | null
+          created_at: string
+          density: number | null
+          gas_name: string
+          hazard_class: string | null
+          id: string
+          melting_point: number | null
+          molecular_weight: number | null
+          price_per_liter: number | null
+          purity_percentage: number | null
+          safety_notes: string | null
+          storage_pressure: number | null
+          storage_temperature: number | null
+          supplier: string | null
+          updated_at: string
+        }
+        Insert: {
+          application?: string | null
+          boiling_point?: number | null
+          chemical_formula?: string | null
+          created_at?: string
+          density?: number | null
+          gas_name: string
+          hazard_class?: string | null
+          id?: string
+          melting_point?: number | null
+          molecular_weight?: number | null
+          price_per_liter?: number | null
+          purity_percentage?: number | null
+          safety_notes?: string | null
+          storage_pressure?: number | null
+          storage_temperature?: number | null
+          supplier?: string | null
+          updated_at?: string
+        }
+        Update: {
+          application?: string | null
+          boiling_point?: number | null
+          chemical_formula?: string | null
+          created_at?: string
+          density?: number | null
+          gas_name?: string
+          hazard_class?: string | null
+          id?: string
+          melting_point?: number | null
+          molecular_weight?: number | null
+          price_per_liter?: number | null
+          purity_percentage?: number | null
+          safety_notes?: string | null
+          storage_pressure?: number | null
+          storage_temperature?: number | null
+          supplier?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
