@@ -3,40 +3,61 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/DataTable";
 import { DataModal } from "@/components/DataModal";
-import { supabase } from "@/integrations/supabase/client";
+import { SettingsModal } from "@/components/SettingsModal";
 import { useToast } from "@/hooks/use-toast";
-import { Database, RefreshCw, Trash2 } from "lucide-react";
+import { Database, RefreshCw, Trash2, Settings, Plus } from "lucide-react";
 
 const Index = () => {
   const [data, setData] = useState<Record<string, any>[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [editingData, setEditingData] = useState<Record<string, any> | undefined>();
   const [editingIndex, setEditingIndex] = useState<number | undefined>();
   const [isLoading, setIsLoading] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [getWebhook, setGetWebhook] = useState(() => {
+    return localStorage.getItem('getWebhook') || '';
+  });
+  const [postWebhook, setPostWebhook] = useState(() => {
+    return localStorage.getItem('postWebhook') || '';
+  });
   const { toast } = useToast();
 
   const handleLoadData = async () => {
+    if (!getWebhook) {
+      toast({
+        title: "Webhook fehlt",
+        description: "Bitte konfigurieren Sie zuerst den GET Webhook in den Einstellungen",
+        variant: "destructive",
+      });
+      setIsSettingsOpen(true);
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const { data: plants, error } = await supabase
-        .from('industrial_gas_plants')
-        .select('*')
-        .order('plant_id');
+      const response = await fetch(getWebhook);
       
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
-      setData(plants || []);
+      const plants = await response.json();
+      
+      setData(Array.isArray(plants) ? plants : []);
+      setDataLoaded(true);
       toast({
-        title: "Success",
-        description: `Loaded ${plants?.length || 0} plant records successfully`,
+        title: "Erfolg",
+        description: `${Array.isArray(plants) ? plants.length : 0} Datensätze erfolgreich geladen`,
       });
     } catch (error) {
       console.error("Error loading data:", error);
       toast({
-        title: "Error",
-        description: "Failed to load data from database",
+        title: "Fehler",
+        description: "Daten konnten nicht vom Webhook geladen werden",
         variant: "destructive",
       });
+      setDataLoaded(false);
     } finally {
       setIsLoading(false);
     }
@@ -44,6 +65,7 @@ const Index = () => {
 
   const handleClearTable = () => {
     setData([]);
+    setDataLoaded(false);
   };
 
   const handleEdit = (row: Record<string, any>, index: number) => {
@@ -59,98 +81,61 @@ const Index = () => {
   };
 
   const handleDelete = async (index: number) => {
-    setIsLoading(true);
-    try {
-      const recordToDelete = data[index];
-      const { error } = await supabase
-        .from('industrial_gas_plants')
-        .delete()
-        .eq('id', recordToDelete.id);
-      
-      if (error) throw error;
-      
-      const newData = data.filter((_, i) => i !== index);
-      setData(newData);
-      
-      toast({
-        title: "Success",
-        description: "Plant record deleted successfully",
-      });
-    } catch (error) {
-      console.error("Error deleting data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete plant record",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    const newData = data.filter((_, i) => i !== index);
+    setData(newData);
+    toast({
+      title: "Erfolg",
+      description: "Datensatz gelöscht",
+    });
   };
 
   const handleSave = async (formData: Record<string, any>) => {
+    if (!postWebhook) {
+      toast({
+        title: "Webhook fehlt",
+        description: "Bitte konfigurieren Sie zuerst den POST Webhook in den Einstellungen",
+        variant: "destructive",
+      });
+      setIsSettingsOpen(true);
+      return;
+    }
+
     setIsLoading(true);
     try {
       let savedRecord;
       
       if (editingIndex !== undefined) {
         // Update existing record
-        const { error } = await supabase
-          .from('industrial_gas_plants')
-          .update({
-            plant_id: formData.plant_id,
-            plant_name: formData.plant_name,
-            gas_type: formData.gas_type,
-            daily_capacity_tons: parseFloat(formData.daily_capacity_tons),
-            status: formData.status,
-            last_maintenance: formData.last_maintenance,
-            responsible_engineer: formData.responsible_engineer,
-            contact_email: formData.contact_email,
-          })
-          .eq('id', editingData?.id);
-        
-        if (error) throw error;
-        
-        // Update local state
+        savedRecord = { ...formData };
         const newData = [...data];
-        savedRecord = { ...editingData, ...formData };
         newData[editingIndex] = savedRecord;
         setData(newData);
       } else {
         // Create new record
-        const { data: newRecord, error } = await supabase
-          .from('industrial_gas_plants')
-          .insert({
-            plant_id: formData.plant_id,
-            plant_name: formData.plant_name,
-            gas_type: formData.gas_type,
-            daily_capacity_tons: parseFloat(formData.daily_capacity_tons),
-            status: formData.status,
-            last_maintenance: formData.last_maintenance,
-            responsible_engineer: formData.responsible_engineer,
-            contact_email: formData.contact_email,
-          })
-          .select()
-          .single();
-        
-        if (error) throw error;
-        
-        savedRecord = newRecord;
-        setData([...data, newRecord]);
+        savedRecord = { ...formData };
+        setData([...data, savedRecord]);
       }
 
       // Send the saved record to webhook
       try {
-        await fetch('https://mockbuilds.app.n8n.cloud/webhook-test/save-data', {
+        const response = await fetch(postWebhook, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(savedRecord),
         });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
       } catch (webhookError) {
-        console.warn('Webhook notification failed:', webhookError);
-        // Don't fail the save operation if webhook fails
+        console.error('Webhook notification failed:', webhookError);
+        toast({
+          title: "Webhook Fehler",
+          description: "Daten wurden lokal gespeichert, aber Webhook-Benachrichtigung fehlgeschlagen",
+          variant: "destructive",
+        });
       }
       
       setIsModalOpen(false);
@@ -158,14 +143,14 @@ const Index = () => {
       setEditingIndex(undefined);
       
       toast({
-        title: "Success",
-        description: `Plant record ${editingIndex !== undefined ? "updated" : "created"} successfully`,
+        title: "Erfolg",
+        description: `Datensatz ${editingIndex !== undefined ? "aktualisiert" : "erstellt"}`,
       });
     } catch (error) {
       console.error("Error saving data:", error);
       toast({
-        title: "Error",
-        description: "Failed to save plant data",
+        title: "Fehler",
+        description: "Daten konnten nicht gespeichert werden",
         variant: "destructive",
       });
     } finally {
@@ -178,23 +163,41 @@ const Index = () => {
     return Object.keys(data[0]).filter(key => !['id', 'created_at', 'updated_at'].includes(key));
   };
 
-  // Load data on component mount
-  useEffect(() => {
-    handleLoadData();
-  }, []);
+  const handleSaveWebhooks = (newGetWebhook: string, newPostWebhook: string) => {
+    setGetWebhook(newGetWebhook);
+    setPostWebhook(newPostWebhook);
+    localStorage.setItem('getWebhook', newGetWebhook);
+    localStorage.setItem('postWebhook', newPostWebhook);
+    toast({
+      title: "Einstellungen gespeichert",
+      description: "Ihre Webhook-Einstellungen wurden erfolgreich gespeichert",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold text-foreground mb-2">
-              Industrial Gas Plants Management
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Manage your industrial gas plant operations and data
-            </p>
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              <div className="text-center flex-1">
+                <h1 className="text-4xl font-bold text-foreground mb-2">
+                  Industrial Gas Plants Management
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  Manage your industrial gas plant operations and data
+                </p>
+              </div>
+              <Button
+                onClick={() => setIsSettingsOpen(true)}
+                variant="outline"
+                size="icon"
+                className="ml-4"
+              >
+                <Settings className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
 
           {/* Control Panel */}
@@ -218,12 +221,12 @@ const Index = () => {
                   {isLoading ? (
                     <>
                       <RefreshCw className="w-5 h-5 mr-3 animate-spin" />
-                      Loading...
+                      Laden...
                     </>
                   ) : (
                     <>
                       <Database className="w-5 h-5 mr-3" />
-                      Load Data
+                      Daten Laden
                     </>
                   )}
                 </Button>
@@ -234,8 +237,18 @@ const Index = () => {
                   className="btn-secondary"
                 >
                   <Trash2 className="w-5 h-5 mr-3" />
-                  Clear Table
+                  Tabelle Leeren
                 </Button>
+                {dataLoaded && (
+                  <Button
+                    onClick={handleAdd}
+                    disabled={isLoading}
+                    className="btn-primary"
+                  >
+                    <Plus className="w-5 h-5 mr-3" />
+                    Hinzufügen
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -247,14 +260,14 @@ const Index = () => {
                 <div className="text-center">
                   <Database className="w-20 h-20 mx-auto text-primary/60 mb-6" />
                   <h3 className="text-2xl font-bold text-foreground mb-4">
-                    No Data Loaded
+                    Keine Daten geladen
                   </h3>
                   <p className="text-muted-foreground mb-8 text-lg">
-                    Click "Load Data" to start managing your industrial gas plant data
+                    Klicken Sie auf "Daten Laden", um mit der Verwaltung zu beginnen
                   </p>
                   <Button onClick={handleLoadData} className="btn-primary">
                     <Database className="w-5 h-5 mr-3" />
-                    Load Data
+                    Daten Laden
                   </Button>
                 </div>
               </CardContent>
@@ -297,6 +310,15 @@ const Index = () => {
             data={editingData}
             columns={getColumns()}
             isLoading={isLoading}
+          />
+
+          {/* Settings Modal */}
+          <SettingsModal
+            isOpen={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            onSave={handleSaveWebhooks}
+            getWebhook={getWebhook}
+            postWebhook={postWebhook}
           />
         </div>
       </div>
