@@ -1,73 +1,10 @@
-# Welcome to your Lovable project
-
-## Project info
-
-**URL**: https://lovable.dev/projects/68b79d2c-3c8f-477e-9a13-7f75b0f53ed1
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/68b79d2c-3c8f-477e-9a13-7f75b0f53ed1) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/68b79d2c-3c8f-477e-9a13-7f75b0f53ed1) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+This demo application connects a React-based frontend with a Supabase database and two n8n workflows. It allows users to view and edit data in a table, with all interactions handled via GET and POST webhooks.
+To use the app, you can either download the GitHub repository directly or launch it online. The repository is available at:
+https://github.com/ducatlinde/n8n-data-joy.git
+You can run the frontend locally by cloning the repository and installing dependencies, or you can open https://n8n-data-joy.lovable.app/ to access the app directly in your browser.
+Before using the app, you need to set up your own n8n environment. This includes importing two workflow files: one for loading data (n8n_Demo_Get_v2.json) and one for saving data (n8n_Demo_Post_v2.json). These should be imported into two separate projects within n8n. (They can be found in the linked GitHub repository)
+Once imported, you’ll need to configure the required credentials. This includes access to your Supabase database (you’ll need to insert your Supabase URL and anon key) and optionally an OpenAI API key, which n8n currently supports with free credits for AI agents.
+After setting up the credentials, open each workflow and double-click on the webhook node. Copy the generated webhook URLs—one for GET and one for POST—and paste them into the corresponding fields in the frontend.
+To load data, make sure the GET workflow is active and click “Execute Workflow” in n8n before pressing the “Load Data” button in the frontend. Similarly, when editing and saving data, you must execute the POST workflow before clicking “Save” in the app.
+Please note that this is a demo version. If you want to connect the app to a different Supabase database, you’ll need to manually adjust the field mappings in the n8n nodes to match your database schema.
+This setup allows users with minimal technical background to explore how n8n workflows can be integrated with a modern frontend and a cloud database.
