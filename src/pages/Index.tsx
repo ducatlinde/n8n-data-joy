@@ -126,7 +126,7 @@ const Index = () => {
           },
           body: JSON.stringify({
             action: action,
-            data: savedRecord
+            ...savedRecord
           }),
         });
 
