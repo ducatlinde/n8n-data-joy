@@ -1,0 +1,487 @@
+{
+  "name": "Versuch 2 POST",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "save-data",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1616,
+        -48
+      ],
+      "id": "48d32287-cf71-468f-8c6c-586d5ae8dbe4",
+      "name": "Webhook",
+      "webhookId": "257cc31d-cc2c-43df-b957-e1b24d77788e"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Du erhältst zwei JSON-Objekte: {{ $json.supabase }} (alte Werte) und {{ $json.webhook }} (neue Werte).  \nVergleiche beide Objekte Feld für Feld.  \nErstelle einen einzigen, gut lesbaren Satz, der **alle Änderungen zusammenfasst**, z. B. \"Status wurde von X zu Y geändert, Daily_Capacity_tons von A zu B\".  \nAntworte **nur mit diesem Satz**, ohne JSON, Listen oder zusätzliche Erklärungen.\n\n\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        48
+      ],
+      "id": "9071c72c-88ae-4c74-887d-73f8c1b74e66",
+      "name": "AI Agent",
+      "notes": "AI Agent vergleicht beide Variablen, erstellt einen Satz mit allen Änderungen und soll am Ende die betroffene Row aktualisieren"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -288,
+        272
+      ],
+      "id": "7ceadcdf-0a6b-49ea-8be4-42739f991ea6",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "wNEwLCmM6VWHC4Wc",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.webhook }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        272
+      ],
+      "id": "478d4a44-c3ba-4ad3-a679-5125c6902467",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "Industrial_gases",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Plant_ID",
+              "keyValue": "={{ $json.body.Plant_ID }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        48
+      ],
+      "id": "d7a082d8-2726-4b57-bb8f-a2a60c2cd212",
+      "name": "Get a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "rKrAnJ5CFPOeOKK0",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8ea9ee3a-57d4-4245-8f1c-9fc393971a8b",
+              "leftValue": "={{ $('Webhook').item.json.body.action }}",
+              "rightValue": "create",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1184,
+        -48
+      ],
+      "id": "dc160225-6c77-4c10-9601-29c9604f05e2",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "tableId": "Industrial_gases",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Plant_ID",
+              "fieldValue": "={{ $json[''].Plant_ID }}"
+            },
+            {
+              "fieldId": "Plant_Name",
+              "fieldValue": "={{ $json[''].Plant_Name }}"
+            },
+            {
+              "fieldId": "Gas_Type",
+              "fieldValue": "={{ $json[''].Plant_Name }}"
+            },
+            {
+              "fieldId": "Daily_Capacity_tons",
+              "fieldValue": "={{ $json[''].Daily_Capacity_tons }}"
+            },
+            {
+              "fieldId": "Status",
+              "fieldValue": "={{ $json[''].Status }}"
+            },
+            {
+              "fieldId": "Last_Maintenance",
+              "fieldValue": "={{ $json[''].Last_Maintenance }}"
+            },
+            {
+              "fieldId": "Responsible_Engineer",
+              "fieldValue": "={{ $json[''].Responsible_Engineer }}"
+            },
+            {
+              "fieldId": "Contact_Email",
+              "fieldValue": "={{ $json[''].Contact_Email }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        -144
+      ],
+      "id": "c8467a0b-0d33-49ec-8b14-3f3e7ed9b345",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "rKrAnJ5CFPOeOKK0",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "59228905-b423-4fef-bdf0-a03737d4f450",
+              "name": "",
+              "value": "={{ $json.body }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": false
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -896,
+        -144
+      ],
+      "id": "90d771f6-9efc-48ec-b5d3-8274764c2688",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst mergedData = items.reduce((acc, item) => {\n  acc[item.json.id] = item.json;\n  return acc;\n}, {});\n\nreturn [\n  {\n    json: { Supabase: mergedData },\n    pairedItem: items.map((_, index) => [index]),\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        48
+      ],
+      "id": "68d5f034-2ead-42df-87d8-a3e8907b6c11",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Supabase Daten verarbeiten\nconst supabaseItems = $(\"Get a row\").all();\nlet supabase = \"\";\n\nif (supabaseItems.length > 0) {\n  supabase = supabaseItems\n    .map(item => Object.values(item.json || {}).join(\",\"))\n    .join(\",\");\n}\n\n// Webhook body verarbeiten (\"action\" ausschließen)\nconst webhookItems = $(\"Webhook\").all();\nlet webhook = \"\";\n\nif (webhookItems.length > 0) {\n  webhook = webhookItems\n    .map(item => {\n      const body = item.json.body || {};\n      const filteredBody = Object.fromEntries(\n        Object.entries(body).filter(([key]) => key !== \"action\")\n      );\n      return Object.values(filteredBody).join(\",\");\n    })\n    .join(\",\");\n}\n\nreturn [\n  {\n    json: {\n      supabase,\n      webhook,\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        48
+      ],
+      "id": "6fb5a2c2-7117-4d73-83cd-82740e6f9a36",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        176,
+        48
+      ],
+      "id": "53945b0d-a196-49a5-9d9d-a16c33d63cdd",
+      "name": "Satz an Frontend"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "Industrial_gases",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Plant_ID",
+              "condition": "eq",
+              "keyValue": "={{ $('Code in JavaScript').item.json.Supabase.undefined.Plant_ID }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Plant_ID",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "Plant_Name",
+              "fieldValue": "={{ $json.name }}"
+            },
+            {
+              "fieldId": "Gas_Type",
+              "fieldValue": "={{ $json.gasType }}"
+            },
+            {
+              "fieldId": "Daily_Capacity_tons",
+              "fieldValue": "={{ $json.dailyCapacity }}"
+            },
+            {
+              "fieldId": "Status",
+              "fieldValue": "={{ $json.status }}"
+            },
+            {
+              "fieldId": "Last_Maintenance",
+              "fieldValue": "={{ $json.lastMaintenance }}"
+            },
+            {
+              "fieldId": "Responsible_Engineer",
+              "fieldValue": "={{ $json.responsibleEngineer }}"
+            },
+            {
+              "fieldId": "Contact_Email",
+              "fieldValue": "={{ $json.contactEmail }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        624,
+        48
+      ],
+      "id": "3294cc02-cb2d-44ca-8670-accec9b9dcdc",
+      "name": "Update a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "rKrAnJ5CFPOeOKK0",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "instructions": "Nimm die Variable \"webhook\" von Code in JavaScript1 Node und mach aus dem ganzen Text einzelne Variabeln",
+        "codeGeneratedForPrompt": "Nimm die Variable \"webhook\" von Code in JavaScript1 Node und mach aus dem ganzen Text einzelne Variabeln",
+        "jsCode": "const items = $(\"Code in JavaScript1\").all();\nconst webhookData = items[0]?.json?.webhook.split(\",\");\n\nconst variables = {\n  id: webhookData[0],\n  name: webhookData[1],\n  gasType: webhookData[2],\n  dailyCapacity: webhookData[3],\n  status: webhookData[4],\n  lastMaintenance: webhookData[5],\n  responsibleEngineer: webhookData[6],\n  contactEmail: webhookData[7],\n};\n\nreturn [{ json: variables }];\n"
+      },
+      "type": "n8n-nodes-base.aiTransform",
+      "typeVersion": 1,
+      "position": [
+        400,
+        48
+      ],
+      "id": "3cb64f39-8b5a-4480-9c49-1a1d60d1cdbc",
+      "name": "AI Transform2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Satz an Frontend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Satz an Frontend": {
+      "main": [
+        [
+          {
+            "node": "AI Transform2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        []
+      ]
+    },
+    "AI Transform2": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bd93a2af-1a68-4707-8285-9b84d9ab6f37",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ee644fb4e63633e29c752b8067f6c08a2ae1315d963ab8f6c4819ef9a09ce682"
+  },
+  "id": "MoVmjGNT0bK4PpXc",
+  "tags": []
+}

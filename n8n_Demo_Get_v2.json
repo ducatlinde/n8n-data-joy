@@ -1,0 +1,97 @@
+{
+  "name": "Versuch 2 GET",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "load-data",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "692dad5e-88a7-40a1-b520-26ffa89d9bd2",
+      "name": "Webhook",
+      "webhookId": "5885e274-fa72-4cd7-85bf-0b6133d6da37"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "Industrial_gases",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        272,
+        0
+      ],
+      "id": "e36ec113-57c0-4703-a567-df65d56d7e77",
+      "name": "Get many rows",
+      "credentials": {
+        "supabaseApi": {
+          "id": "rKrAnJ5CFPOeOKK0",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        592,
+        0
+      ],
+      "id": "c5f880ae-cb87-4915-aaec-c4aeb0a8b184",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "898d992d-d29b-4d62-ad37-1ecd7aa1402f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ee644fb4e63633e29c752b8067f6c08a2ae1315d963ab8f6c4819ef9a09ce682"
+  },
+  "id": "E9i9Cjp9WgGVZepd",
+  "tags": []
+}
