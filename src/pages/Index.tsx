@@ -103,6 +103,7 @@ const Index = () => {
     setIsLoading(true);
     try {
       let savedRecord;
+      const action = editingIndex !== undefined ? "update" : "create";
       
       if (editingIndex !== undefined) {
         // Update existing record
@@ -116,14 +117,17 @@ const Index = () => {
         setData([...data, savedRecord]);
       }
 
-      // Send the saved record to webhook
+      // Send the saved record with action to webhook
       try {
         const response = await fetch(postWebhook, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(savedRecord),
+          body: JSON.stringify({
+            action: action,
+            data: savedRecord
+          }),
         });
 
         if (!response.ok) {
